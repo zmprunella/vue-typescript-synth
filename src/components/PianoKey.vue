@@ -1,10 +1,5 @@
 <template>
-  <div
-    class="key"
-    :class="[note.type, { 'active-key': isActive }]"
-    @mousedown="onMouseDown"
-    @mouseup="onMouseUp"
-  ></div>
+  <div class="key" :class="[note.type, { 'active-key': isActive }]"></div>
 </template>
 
 <script lang="ts">

@@ -35,19 +35,15 @@
       </div>
 
       <VolumeSlider :initialVolume="volume" @volume-change="emitVolumeChange" />
+      <div class="instruction-box">
+        Use the keyboard to play a note or chord "A,S,W,D"
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import {
-  defineComponent,
-  ref,
-  reactive,
-  onMounted,
-  onUnmounted,
-  computed,
-} from "vue";
+import { defineComponent, ref, reactive, onMounted, onUnmounted } from "vue";
 import PianoKey from "./PianoKey.vue";
 import VolumeSlider from "./VolumeSlider.vue";
 
@@ -338,5 +334,20 @@ export default defineComponent({
   -moz-text-fill-color: transparent;
   -webkit-text-stroke-width: 1.5px;
   -webkit-text-stroke-color: black;
+}
+.controls-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.instruction-box {
+  background-color: #99e7ff;
+  border: 1px solid #545454;
+  border-radius: 4px;
+  padding: 10px;
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
 }
 </style>
