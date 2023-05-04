@@ -1,7 +1,7 @@
 <template>
   <div
     class="key"
-    :class="[note.type, { active: note.active }]"
+    :class="[note.type, { 'active-key': isActive }]"
     @mousedown="onMouseDown"
     @mouseup="onMouseUp"
   ></div>
@@ -25,6 +25,7 @@ export default defineComponent({
       type: Function,
       required: true,
     },
+    isActive: Boolean,
   },
   methods: {
     onMouseDown() {
@@ -37,13 +38,13 @@ export default defineComponent({
 });
 </script>
 
-<!-- PianoKey.vue -->
-<!-- ... -->
 <style scoped>
 .key {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  box-shadow: 0 4px 6px rgba(86, 135, 175, 0.524);
+}
+.active-key {
+  opacity: 0.45;
 }
 </style>

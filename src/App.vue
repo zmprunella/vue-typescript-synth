@@ -11,7 +11,7 @@ import PianoKeyboard from "./components/PianoKeyboard.vue"; // Update the import
 export default defineComponent({
   name: "App",
   components: {
-    PianoKeyboard, // Register the renamed component
+    PianoKeyboard,
   },
 });
 </script>
@@ -24,6 +24,6 @@ export default defineComponent({
   height: 100vh;
   margin: 0;
   padding: 0;
-  background: linear-gradient(#197eb4, #00d9ff);
+  background: linear-gradient(#0c8ed3, #0cabc0, #aff3ff);
 }
 </style>

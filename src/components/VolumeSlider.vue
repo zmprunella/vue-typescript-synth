@@ -56,12 +56,12 @@ export default defineComponent({
   align-items: center;
   flex-direction: column;
   justify-content: center;
-  border: 1px solid rgb(105, 158, 164); /* Add a border width */
+  border: 1px solid rgb(72, 110, 114); /* Add a border width */
   border-radius: 5px;
   padding: 10px; /* Add padding */
-  background-color: rgba(93, 166, 185, 0.418); /* Add a background color */
-  margin-left: auto; /* Add this to center the box horizontally */
-  margin-right: auto; /* Add this to center the box horizontally */
+  background-color: #86d0d2; /* Add a background color */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 input[type="range"].volume-slider {

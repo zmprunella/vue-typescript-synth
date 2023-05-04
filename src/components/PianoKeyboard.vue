@@ -1,6 +1,7 @@
 <!-- PianoKeyboard.vue -->
 <template>
   <div>
+    <h1 class="title">Simple Synth</h1>
     <div class="waveform-selection">
       <button
         v-for="type in waveforms"
@@ -29,6 +30,7 @@
           :note="note"
           :playNote="playNote"
           :stopNote="stopNote"
+          :isActive="activeKeys[note.label]"
         />
       </div>
 
@@ -38,7 +40,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, reactive } from "vue";
+import {
+  defineComponent,
+  ref,
+  reactive,
+  onMounted,
+  onUnmounted,
+  computed,
+} from "vue";
 import PianoKey from "./PianoKey.vue";
 import VolumeSlider from "./VolumeSlider.vue";
 
@@ -63,18 +72,68 @@ export default defineComponent({
       { label: "A#", frequency: 466.16, type: "black" },
       { label: "B", frequency: 493.88, type: "white" },
     ];
+    const keyMap: { [key: string]: string | undefined } = {
+      a: "C",
+      w: "C#",
+      s: "D",
+      e: "D#",
+      d: "E",
+      f: "F",
+      t: "F#",
+      g: "G",
+      y: "G#",
+      h: "A",
+      u: "A#",
+      j: "B",
+    };
+
+    const activeKeys = reactive(
+      Object.keys(keyMap).reduce((acc, key) => {
+        acc[keyMap[key] as string] = false;
+        return acc;
+      }, {} as Record<string, boolean>)
+    );
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      const noteLabel = keyMap[key];
+      if (noteLabel) {
+        const noteData = notes.find((n) => n.label === noteLabel);
+        if (noteData) {
+          playNote(noteData.frequency, noteData.label);
+        }
+      }
+    };
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const key = event.key.toLowerCase();
+      const noteLabel = keyMap[key];
+      if (noteLabel) {
+        stopNote(noteLabel);
+      }
+    };
+
+    onMounted(() => {
+      window.addEventListener("keydown", handleKeyDown);
+      window.addEventListener("keyup", handleKeyUp);
+    });
+
+    onUnmounted(() => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    });
 
     type Synth = {
       audioContext: AudioContext;
-      oscillator: OscillatorNode | null;
+      oscillators: Record<string, OscillatorNode>;
       contextResumed: boolean;
       gainNode: GainNode | null;
-      waveformType: "sine" | "square" | "triangle" | "sawtooth"; // Update the type definition here
+      waveformType: "sine" | "square" | "triangle" | "sawtooth";
     };
 
     const synth: Synth = reactive({
       audioContext: new (window.AudioContext || window.webkitAudioContext)(),
-      oscillator: null,
+      oscillators: {},
       contextResumed: false,
       gainNode: null,
       waveformType: "sine",
@@ -100,39 +159,30 @@ export default defineComponent({
       }
     };
 
-    const startOscillator = (frequency: number) => {
-      if (synth.oscillator) {
-        stopOscillator();
-      }
-      const oscillator = synth.audioContext.createOscillator();
-      oscillator.type = synth.waveformType;
-      oscillator.frequency.value = frequency;
-      if (synth.gainNode) {
-        oscillator.connect(synth.gainNode);
-      }
-      oscillator.start();
-      synth.oscillator = oscillator;
-    };
-
-    const stopOscillator = () => {
-      if (synth.oscillator) {
-        synth.oscillator.stop();
-        synth.oscillator.disconnect();
-        synth.oscillator = null;
-      }
-    };
-
     const playNote = async (frequency: number, label: string) => {
       await ensureAudioContextResumed();
       const noteData = notes.find((n) => n.label === label);
-      if (noteData) {
-        currentNote.value = noteData.label; // Update the currentNote value
-        startOscillator(noteData.frequency);
+      if (noteData && !synth.oscillators[label]) {
+        currentNote.value = noteData.label;
+        const oscillator = synth.audioContext.createOscillator();
+        oscillator.type = synth.waveformType;
+        oscillator.frequency.value = frequency;
+        if (synth.gainNode) {
+          oscillator.connect(synth.gainNode);
+        }
+        oscillator.start();
+        synth.oscillators[label] = oscillator;
+        activeKeys[label] = true;
       }
     };
 
-    const stopNote = () => {
-      stopOscillator();
+    const stopNote = (label: string) => {
+      if (synth.oscillators[label]) {
+        synth.oscillators[label].stop();
+        synth.oscillators[label].disconnect();
+        delete synth.oscillators[label];
+      }
+      activeKeys[label] = false;
     };
 
     const updateVolume = (newVolume: number) => {
@@ -171,7 +221,8 @@ export default defineComponent({
       resumeAudioContext,
       setWaveformType,
       waveforms,
-      getFrequencyForLabel, // Add this line
+      getFrequencyForLabel,
+      activeKeys,
     };
   },
 });
@@ -181,17 +232,17 @@ export default defineComponent({
 .piano-keyboard {
   display: flex;
   align-items: flex-start;
-  background-color: #7fbbbd;
+  background-color: #84cfd2;
   padding: 50px;
   border-radius: 10px;
-  box-shadow: 1px 8px 6px rgb(82, 104, 110);
+  box-shadow: 1px 8px 6px rgb(57, 90, 99);
 }
 
 .key {
   cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-  box-shadow: 0 4px 6px rgb(86, 135, 175);
+  box-shadow: 0 2px 4px rgb(49, 108, 156);
 }
 
 .white {
@@ -219,11 +270,10 @@ export default defineComponent({
   min-height: 100vh;
   padding: 1rem;
   box-sizing: border-box;
-  background-color: #23447c;
 }
 
 .piano-container {
-  margin-bottom: 200px;
+  margin-bottom: 250px;
 }
 
 .info-box-container {
@@ -235,13 +285,14 @@ export default defineComponent({
 
 .info-box {
   flex: 1;
-  padding: 20px;
+  padding: 15px;
+  margin: 10px;
   text-align: center;
   font-size: 24px;
   font-weight: bold;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  background-color: #ffffffd8;
+  border: 1px solid #0000007f;
+  border-radius: 8px;
 }
 
 .waveform-selection {
@@ -252,22 +303,40 @@ export default defineComponent({
 
 .waveform-selection button {
   background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  border: 1px solid #0707077e;
   border-radius: 4px;
-  color: #333;
+  color: #000000;
   cursor: pointer;
   font-size: 14px;
   margin: 0 5px;
   padding: 8px 12px;
   text-transform: capitalize;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s;
 }
 
 .waveform-selection button:hover {
-  background-color: #e0e0e0;
+  background-color: #a2a1a1;
+  border: 2px solid #00ccff;
 }
 
 .waveform-selection button:active {
   background-color: #d0d0d0;
+  border: 2px solid #00ccff;
+}
+
+.title {
+  font-size: 3rem;
+
+  text-align: center;
+  margin-bottom: 3rem;
+  background-color: #f3ec78;
+  background-image: linear-gradient(45deg, #ff6600, #eaff00);
+  background-size: 100%;
+  -webkit-background-clip: text;
+  -moz-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -moz-text-fill-color: transparent;
+  -webkit-text-stroke-width: 1.5px;
+  -webkit-text-stroke-color: black;
 }
 </style>
