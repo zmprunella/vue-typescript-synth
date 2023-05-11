@@ -9,6 +9,7 @@
         @click="
           setWaveformType(type as 'sine' | 'square' | 'triangle' | 'sawtooth')
         "
+        :class="{ 'waveform-selected': synth.waveformType === type }"
       >
         {{ type }}
       </button>
@@ -35,6 +36,7 @@
       </div>
 
       <VolumeSlider :initialVolume="volume" @volume-change="emitVolumeChange" />
+
       <div class="instruction-box">
         Use the keyboard to play a note or chord "A,S,W,D"
       </div>
@@ -46,6 +48,7 @@
 import { defineComponent, ref, reactive, onMounted, onUnmounted } from "vue";
 import PianoKey from "./PianoKey.vue";
 import VolumeSlider from "./VolumeSlider.vue";
+import FrequencySlider from "./FrequencySlider.vue";
 
 export default defineComponent({
   name: "PianoKeyboard",
@@ -281,7 +284,7 @@ export default defineComponent({
 
 .info-box {
   flex: 1;
-  padding: 15px;
+  padding: 10px;
   margin: 10px;
   text-align: center;
   font-size: 24px;
@@ -289,6 +292,10 @@ export default defineComponent({
   background-color: #ffffffd8;
   border: 1px solid #0000007f;
   border-radius: 8px;
+}
+
+.waveform-selected {
+  background-color: #00ffff !important;
 }
 
 .waveform-selection {
@@ -312,12 +319,10 @@ export default defineComponent({
 
 .waveform-selection button:hover {
   background-color: #a2a1a1;
-  border: 2px solid #00ccff;
 }
 
 .waveform-selection button:active {
   background-color: #d0d0d0;
-  border: 2px solid #00ccff;
 }
 
 .title {
@@ -326,7 +331,7 @@ export default defineComponent({
   text-align: center;
   margin-bottom: 3rem;
   background-color: #f3ec78;
-  background-image: linear-gradient(45deg, #ff6600, #eaff00);
+  background-image: linear-gradient(45deg, #ff00aa, #d9ff00);
   background-size: 100%;
   -webkit-background-clip: text;
   -moz-background-clip: text;
@@ -349,5 +354,24 @@ export default defineComponent({
   margin-top: 10px;
   text-align: center;
   font-size: 14px;
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+  .piano-keyboard {
+    padding: 20px;
+    flex-wrap: wrap;
+  }
+
+  .key {
+    height: 60px;
+    width: 20px;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  /* Add any additional styles you want to adjust for mobile here */
 }
 </style>
